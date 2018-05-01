@@ -1,4 +1,5 @@
-import csv
+from collections import defaultdict
+
 import numpy as np
 
 import matplotlib as mpl
@@ -40,46 +41,39 @@ def draw(results, mode='velocity'):
 
 
 def fly(agent_class):
-    file_output = 'data.txt'  # file name for saved results
-
-    # Setup
     task = Task()
     agent = agent_class(task)
-    state = agent.reset_episode()
-    done = False
-    labels = [
-        'time', 'x', 'y', 'z', 'phi', 'theta', 'psi', 'x_velocity',
-        'y_velocity', 'z_velocity', 'phi_velocity', 'theta_velocity',
-        'psi_velocity', 'rotor_speed1', 'rotor_speed2', 'rotor_speed3',
-        'rotor_speed4'
-    ]
-    results = {x: [] for x in labels}
-    reward_sum = 0
-    # Run the simulation, and save the results.
-    with open(file_output, 'w') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow(labels)
-        while True:
+    rewards = []
+    num_episodes = 20000
+    draw_every = 1000
+    for episode_number in range(1, num_episodes + 1):
+        state = agent.reset_episode()
+        episode_rewards = 0
+        results = defaultdict(list)
+        done = False
+        while not done:
             rotor_speeds = agent.act(state)
             next_state, reward, done = task.step(rotor_speeds)
             agent.step(reward, done)
             state = next_state
-            reward_sum += reward
-            to_write = (
-                [task.sim.time] +
-                list(task.sim.pose) +
-                list(task.sim.v) +
-                list(task.sim.angular_v) +
-                list(rotor_speeds)
-            )
-            for ii in range(len(labels)):
-                results[labels[ii]].append(to_write[ii])
-            writer.writerow(to_write)
+            episode_rewards += reward
+            results['x'].append(task.sim.pose[0])
+            results['y'].append(task.sim.pose[1])
+            results['z'].append(task.sim.pose[2])
+            results['x_velocity'].append(task.sim.v[0])
+            results['y_velocity'].append(task.sim.v[1])
+            results['z_velocity'].append(task.sim.v[2])
             if done:
                 break
-
-    print('Finished in', task.sim.time, 'with reward', reward_sum)
-    return results
+        print(
+            'Episode', episode_number,
+            'finished in', task.sim.time,
+            'with reward', episode_rewards
+        )
+        if episode_number % draw_every == 0:
+            draw(results, mode='time')
+        rewards.append(episode_rewards)
+    return rewards
 
 
 def main():
@@ -87,9 +81,9 @@ def main():
     from agents.up import UpAgent
     from agents.policy_search import PolicySearchAgent
 
-    agent_class = RandomAgent
-    results = fly(agent_class)
-    draw(results, mode='time')
+    agent_class = PolicySearchAgent
+    rewards = fly(agent_class)
+    print('Rewards', rewards)
 
 
 if __name__ == '__main__':
