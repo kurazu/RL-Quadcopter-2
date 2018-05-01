@@ -1,10 +1,12 @@
 import numpy as np
-from task import Task
+from agents.base import BaseAgent
 
-class PolicySearch_Agent():
+
+class PolicySearchAgent(BaseAgent):
+
     def __init__(self, task):
+        super().__init__(task)
         # Task (environment) information
-        self.task = task
         self.state_size = task.state_size
         self.action_size = task.action_size
         self.action_low = task.action_low
@@ -26,8 +28,7 @@ class PolicySearch_Agent():
     def reset_episode(self):
         self.total_reward = 0.0
         self.count = 0
-        state = self.task.reset()
-        return state
+        return super().reset_episode()
 
     def step(self, reward, done):
         # Save experience / reward
@@ -54,4 +55,4 @@ class PolicySearch_Agent():
             self.w = self.best_w
             self.noise_scale = min(2.0 * self.noise_scale, 3.2)
         self.w = self.w + self.noise_scale * np.random.normal(size=self.w.shape)  # equal noise in all directions
-        
+

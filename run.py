@@ -45,6 +45,7 @@ def fly(agent_class):
     # Setup
     task = Task()
     agent = agent_class(task)
+    state = agent.reset_episode()
     done = False
     labels = [
         'time', 'x', 'y', 'z', 'phi', 'theta', 'psi', 'x_velocity',
@@ -59,8 +60,10 @@ def fly(agent_class):
         writer = csv.writer(csvfile)
         writer.writerow(labels)
         while True:
-            rotor_speeds = agent.act()
-            _, reward, done = task.step(rotor_speeds)
+            rotor_speeds = agent.act(state)
+            next_state, reward, done = task.step(rotor_speeds)
+            agent.step(reward, done)
+            state = next_state
             reward_sum += reward
             to_write = (
                 [task.sim.time] +
@@ -82,8 +85,9 @@ def fly(agent_class):
 def main():
     from agents.random import RandomAgent
     from agents.up import UpAgent
+    from agents.policy_search import PolicySearchAgent
 
-    agent_class = UpAgent
+    agent_class = RandomAgent
     results = fly(agent_class)
     draw(results, mode='time')
 
