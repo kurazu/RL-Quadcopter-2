@@ -1,5 +1,5 @@
-from keras import layers, models, optimizers
-from keras import backend as K
+from keras import layers, models, optimizers, backend as K
+
 
 class Actor:
     """Actor (Policy) Model."""
@@ -34,15 +34,20 @@ class Actor:
         net = layers.Dense(units=64, activation='relu')(net)
         net = layers.Dense(units=32, activation='relu')(net)
 
-        # Try different layer sizes, activations, add batch normalization, regularizers, etc.
+        # Try different layer sizes, activations,
+        # add batch normalization, regularizers, etc.
 
         # Add final output layer with sigmoid activation
-        raw_actions = layers.Dense(units=self.action_size, activation='sigmoid',
-            name='raw_actions')(net)
+        raw_actions = layers.Dense(
+            units=self.action_size, activation='sigmoid',
+            name='raw_actions'
+        )(net)
 
         # Scale [0, 1] output for each action dimension to proper range
-        actions = layers.Lambda(lambda x: (x * self.action_range) + self.action_low,
-            name='actions')(raw_actions)
+        actions = layers.Lambda(
+            lambda x: (x * self.action_range) + self.action_low,
+            name='actions'
+        )(raw_actions)
 
         # Create Keras model
         self.model = models.Model(inputs=states, outputs=actions)
@@ -55,8 +60,11 @@ class Actor:
 
         # Define optimizer and training function
         optimizer = optimizers.Adam()
-        updates_op = optimizer.get_updates(params=self.model.trainable_weights, loss=loss)
+        updates_op = optimizer.get_updates(
+            params=self.model.trainable_weights, loss=loss
+        )
         self.train_fn = K.function(
             inputs=[self.model.input, action_gradients, K.learning_phase()],
             outputs=[],
-            updates=updates_op)
+            updates=updates_op
+        )

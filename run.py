@@ -52,9 +52,9 @@ def fly(agent_class):
         results = defaultdict(list)
         done = False
         while not done:
-            rotor_speeds = agent.act(state)
-            next_state, reward, done = task.step(rotor_speeds)
-            agent.step(reward, done)
+            action = agent.act(state)
+            next_state, reward, done = task.step(action)
+            agent.step(action, reward, next_state, done)
             state = next_state
             episode_rewards += reward
             results['x'].append(task.sim.pose[0])
@@ -77,11 +77,12 @@ def fly(agent_class):
 
 
 def main():
-    from agents.random import RandomAgent
-    from agents.up import UpAgent
-    from agents.policy_search import PolicySearchAgent
+    from agents.agent import DDPG
+    # from agents.random import RandomAgent
+    # from agents.up import UpAgent
+    # from agents.policy_search import PolicySearchAgent
 
-    agent_class = PolicySearchAgent
+    agent_class = DDPG
     rewards = fly(agent_class)
     print('Rewards', rewards)
 
