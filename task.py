@@ -1,4 +1,7 @@
+import math
+
 import numpy as np
+
 from physics_sim import PhysicsSim
 
 """
@@ -26,6 +29,10 @@ def vector_length(point):
     return np.sqrt(np.sum(point ** 2))
 
 
+def inverse_exponential(x):
+    return math.exp(-x)
+
+
 class Task():
     """
     Task (environment) that defines the goal and provides feedback to the agent
@@ -34,7 +41,7 @@ class Task():
     def __init__(self):
         # Start
         # 10 cm above ground
-        init_pose = np.array([0.0, 0.0, 0.1, 0.0, 0.0, 0.0])
+        init_pose = np.array([0.0, 0.0, 2.0, 0.0, 0.0, 0.0])
 
         # Start still
         init_velocities = None  # Will become zeros
@@ -60,9 +67,6 @@ class Task():
         self.action_high = 900
         self.action_size = 4
 
-    def get_crashed_reward(self):
-        return -1000
-
     def get_reward(self):
         """Uses current pose of sim to return reward."""
 
@@ -71,10 +75,15 @@ class Task():
         reward = (
             # Penalize each frame it takes us to get to the target
             # -1 +
+            0.1 +
             # Penalize straying from horizontal center
-            -euclid_distance(current_position, self.horizonal_target_pos) +
+            # 0.2 * inverse_exponential(
+            #     euclid_distance(current_position, self.horizonal_target_pos)
+            # ) +
             # Penalize straying from target
-            -euclid_distance(current_position, self.target_pos)
+            inverse_exponential(
+                euclid_distance(current_position, self.target_pos)
+            )
         )
         return reward
 
@@ -85,7 +94,7 @@ class Task():
         if time_exceeded:
             return 0
         else:  # Crashed or went off limits
-            return - (1 / self.sim.dt) * self.sim.runtime
+            return 0
 
     # def is_target_reached(self):
     #     current_position = self.sim.pose[:3]

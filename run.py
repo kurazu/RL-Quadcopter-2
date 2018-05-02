@@ -44,8 +44,8 @@ def fly(agent_class):
     task = Task()
     agent = agent_class(task)
     rewards = []
-    num_episodes = 10000
-    draw_every = 1000
+    num_episodes = 100000
+    draw_every = 5000
     for episode_number in range(1, num_episodes + 1):
         state = agent.reset_episode()
         episode_rewards = 0
@@ -80,7 +80,7 @@ def main():
     from agents.agent import DDPG
     # from agents.random import RandomAgent
     # from agents.up import UpAgent
-    # from agents.policy_search import PolicySearchAgent
+    from agents.policy_search import PolicySearchAgent
 
     agent_class = DDPG
     rewards = fly(agent_class)

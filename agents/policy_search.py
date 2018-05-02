@@ -30,7 +30,7 @@ class PolicySearchAgent(BaseAgent):
         self.count = 0
         return super().reset_episode()
 
-    def step(self, reward, done):
+    def step(self, action, reward, next_state, done):
         # Save experience / reward
         self.total_reward += reward
         self.count += 1
