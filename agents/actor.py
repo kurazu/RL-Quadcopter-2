@@ -53,6 +53,8 @@ class Actor:
 
         # Create Keras model
         self.model = models.Model(inputs=states, outputs=actions)
+        print('Actor model')
+        self.model.summary()
 
         # Define loss function using action value (Q value) gradients
         action_gradients = layers.Input(shape=(self.action_size,))

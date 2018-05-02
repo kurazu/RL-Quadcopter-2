@@ -60,6 +60,8 @@ class Critic:
 
         # Create Keras model
         self.model = models.Model(inputs=[states, actions], outputs=Q_values)
+        print('Critic model')
+        self.model.summary()
 
         # Define optimizer and compile model for training
         # with built-in loss function

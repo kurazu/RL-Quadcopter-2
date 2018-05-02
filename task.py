@@ -62,7 +62,12 @@ class Task():
 
         self.action_repeat = 3
 
-        self.state_size = self.action_repeat * 6
+        # 6 - pose
+        # 3 - v
+        # 3- angular_v
+        # 3 - linear_accel
+        # 3 - angular_accel
+        self.state_size = self.action_repeat * (6 + 3 + 3 + 3 + 3)
         self.action_low = 0
         self.action_high = 900
         self.action_size = 4
@@ -72,6 +77,8 @@ class Task():
 
         current_position = self.sim.pose[:3]
 
+        distance_to_target = euclid_distance(current_position, self.target_pos)
+        ie = inverse_exponential(distance_to_target)
         reward = (
             # Penalize each frame it takes us to get to the target
             # -1 +
@@ -81,9 +88,7 @@ class Task():
             #     euclid_distance(current_position, self.horizonal_target_pos)
             # ) +
             # Penalize straying from target
-            inverse_exponential(
-                euclid_distance(current_position, self.target_pos)
-            )
+            ie
         )
         return reward
 
@@ -106,24 +111,34 @@ class Task():
     #         abs(vector_length(current_velocity)) < 0.01
     #     )
 
+    def sim_to_state(self):
+        return [
+            *self.sim.pose,
+            *self.sim.v,
+            *self.sim.angular_v,
+            *self.sim.linear_accel,
+            *self.sim.angular_accels
+        ]
+
     def step(self, rotor_speeds):
         """Uses action to obtain next state, reward, done."""
         reward = 0
-        pose_all = []
+        state_all = []
         for _ in range(self.action_repeat):
             # update the sim pose and velocities
             done = self.sim.next_timestep(rotor_speeds)
             reward += self.get_reward()
-            pose_all.append(self.sim.pose)
+            state_all.append(self.sim_to_state())
+
         if done:
             time_exceeded = self.sim.time > self.sim.runtime
             reward += self.get_episode_finished_reward(time_exceeded)
 
-        next_state = np.concatenate(pose_all)
+        next_state = np.concatenate(state_all)
         return next_state, reward, done
 
     def reset(self):
         """Reset the sim to start a new episode."""
         self.sim.reset()
-        state = np.concatenate([self.sim.pose] * self.action_repeat)
+        state = np.concatenate([self.sim_to_state()] * self.action_repeat)
         return state

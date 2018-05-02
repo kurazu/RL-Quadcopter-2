@@ -4,6 +4,7 @@ from agents.actor import Actor
 from agents.critic import Critic
 from agents.noise import OUNoise
 from agents.buffer import ReplayBuffer
+# from agents.advanced_buffer import AdvancedReplayBuffer
 from agents.base import BaseAgent
 
 
@@ -54,8 +55,8 @@ class DDPG(BaseAgent):
         self.memory = ReplayBuffer(self.buffer_size, self.batch_size)
 
         # Algorithm parameters
-        self.gamma = 0.99  # discount factor
-        self.tau = 0.01  # for soft update of target parameters
+        self.gamma = 0.9  # discount factor
+        self.tau = 0.2  # for soft update of target parameters
 
     def reset_episode(self):
         self.noise.reset()

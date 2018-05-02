@@ -44,8 +44,9 @@ def fly(agent_class):
     task = Task()
     agent = agent_class(task)
     rewards = []
-    num_episodes = 100000
-    draw_every = 5000
+    num_episodes = 10000
+    draw_every = num_episodes
+    mean_every = 100
     for episode_number in range(1, num_episodes + 1):
         state = agent.reset_episode()
         episode_rewards = 0
@@ -65,11 +66,14 @@ def fly(agent_class):
             results['z_velocity'].append(task.sim.v[2])
             if done:
                 break
-        print(
+        True or print(
             'Episode', episode_number,
             'finished in', task.sim.time,
             'with reward', episode_rewards
         )
+        if episode_number % mean_every == 0:
+            avg_mean = np.mean(rewards[-draw_every:])
+            print('AVG Reward', avg_mean, 'after', episode_number, 'episodes')
         if episode_number % draw_every == 0:
             draw(results, mode='time')
         rewards.append(episode_rewards)
@@ -79,7 +83,7 @@ def fly(agent_class):
 def main():
     from agents.agent import DDPG
     # from agents.random import RandomAgent
-    # from agents.up import UpAgent
+    from agents.up import UpAgent
     from agents.policy_search import PolicySearchAgent
 
     agent_class = DDPG
