@@ -1,5 +1,7 @@
 from keras import layers, models, optimizers, backend as K
 
+from agents.neural import dense
+
 
 class Critic:
     """Critic (Value) Model."""
@@ -29,19 +31,27 @@ class Critic:
         actions = layers.Input(shape=(self.action_size,), name='actions')
 
         # Add hidden layer(s) for state pathway
-        net_states = layers.Dense(units=32, activation='relu')(states)
-        net_states = layers.Dense(units=64, activation='relu')(net_states)
+        net_states = dense(
+            states, 128, activation='lrelu', batch_normalization=True
+        )
+        net_states = dense(
+            net_states, 64, activation='lrelu', batch_normalization=True
+        )
 
         # Add hidden layer(s) for action pathway
-        net_actions = layers.Dense(units=32, activation='relu')(actions)
-        net_actions = layers.Dense(units=64, activation='relu')(net_actions)
+        net_actions = dense(
+            actions, 128, activation='lrelu', batch_normalization=True
+        )
+        net_actions = dense(
+            net_actions, 64, activation='lrelu', batch_normalization=True
+        )
 
         # Try different layer sizes, activations,
         # add batch normalization, regularizers, etc.
 
         # Combine state and action pathways
         net = layers.Add()([net_states, net_actions])
-        net = layers.Activation('relu')(net)
+        net = layers.LeakyReLU(alpha=0.2)(net)
 
         # Add more layers to the combined network if needed
 
@@ -63,4 +73,5 @@ class Critic:
         # (to be used by actor model)
         self.get_action_gradients = K.function(
             inputs=[*self.model.input, K.learning_phase()],
-            outputs=action_gradients)
+            outputs=action_gradients
+        )

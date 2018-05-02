@@ -1,5 +1,7 @@
 from keras import layers, models, optimizers, backend as K
 
+from agents.neural import dense
+
 
 class Actor:
     """Actor (Policy) Model."""
@@ -30,9 +32,9 @@ class Actor:
         states = layers.Input(shape=(self.state_size,), name='states')
 
         # Add hidden layers
-        net = layers.Dense(units=32, activation='relu')(states)
-        net = layers.Dense(units=64, activation='relu')(net)
-        net = layers.Dense(units=32, activation='relu')(net)
+        net = dense(states, 128, activation='lrelu', batch_normalization=True)
+        net = dense(net, 64, activation='lrelu', batch_normalization=True)
+        net = dense(net, 16, activation='lrelu', batch_normalization=True)
 
         # Try different layer sizes, activations,
         # add batch normalization, regularizers, etc.

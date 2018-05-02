@@ -70,24 +70,32 @@ class Task():
 
         reward = (
             # Penalize each frame it takes us to get to the target
-            -1 +
+            # -1 +
             # Penalize straying from horizontal center
-            -euclid_distance(current_position, self.horizonal_target_pos)
+            -euclid_distance(current_position, self.horizonal_target_pos) +
+            # Penalize straying from target
+            -euclid_distance(current_position, self.target_pos)
         )
         return reward
 
     def get_target_reached_reward(self):
         return +100
 
-    def is_target_reached(self):
-        current_position = self.sim.pose[:3]
-        current_velocity = self.sim.v
-        return (
-            # Within one cm from the target
-            abs(euclid_distance(current_position, self.target_pos)) < 0.01 and
-            # Almost zero velocity
-            abs(vector_length(current_velocity)) < 0.01
-        )
+    def get_episode_finished_reward(self, time_exceeded):
+        if time_exceeded:
+            return 0
+        else:  # Crashed or went off limits
+            return - (1 / self.sim.dt) * self.sim.runtime
+
+    # def is_target_reached(self):
+    #     current_position = self.sim.pose[:3]
+    #     current_velocity = self.sim.v
+    #     return (
+    #         # Within one cm from the target
+    #         abs(euclid_distance(current_position, self.target_pos)) < 0.01 and
+    #         # Almost zero velocity
+    #         abs(vector_length(current_velocity)) < 0.01
+    #     )
 
     def step(self, rotor_speeds):
         """Uses action to obtain next state, reward, done."""
@@ -99,12 +107,8 @@ class Task():
             reward += self.get_reward()
             pose_all.append(self.sim.pose)
         if done:
-            # Penalize crashing, going off-limits or taking too long
-            reward += -1000
-        elif self.is_target_reached():
-            # Reward reaching the target
-            reward += 1000
-            done = True
+            time_exceeded = self.sim.time > self.sim.runtime
+            reward += self.get_episode_finished_reward(time_exceeded)
 
         next_state = np.concatenate(pose_all)
         return next_state, reward, done
