@@ -6,7 +6,7 @@ from agents.neural import dense
 class Critic:
     """Critic (Value) Model."""
 
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, learning_rate=None):
         """Initialize parameters and build model.
 
         Params
@@ -18,7 +18,7 @@ class Critic:
         self.action_size = action_size
 
         # Initialize any other variables here
-
+        self.learning_rate = learning_rate
         self.build_model()
 
     def build_model(self):
@@ -32,18 +32,18 @@ class Critic:
 
         # Add hidden layer(s) for state pathway
         net_states = dense(
-            states, 128, activation='lrelu', batch_normalization=True
+            states, 300, activation='relu', batch_normalization=True
         )
         net_states = dense(
-            net_states, 64, activation='lrelu', batch_normalization=True
+            net_states, 400, activation='relu', batch_normalization=True
         )
 
         # Add hidden layer(s) for action pathway
         net_actions = dense(
-            actions, 128, activation='lrelu', batch_normalization=True
+            actions, 300, activation='relu', batch_normalization=True
         )
         net_actions = dense(
-            net_actions, 64, activation='lrelu', batch_normalization=True
+            net_actions, 400, activation='relu', batch_normalization=True
         )
 
         # Try different layer sizes, activations,
@@ -51,7 +51,7 @@ class Critic:
 
         # Combine state and action pathways
         net = layers.Add()([net_states, net_actions])
-        net = layers.LeakyReLU(alpha=0.2)(net)
+        net = layers.Activation('relu')(net)
 
         # Add more layers to the combined network if needed
 
@@ -65,7 +65,7 @@ class Critic:
 
         # Define optimizer and compile model for training
         # with built-in loss function
-        optimizer = optimizers.Adam()
+        optimizer = optimizers.Adam(lr=self.learning_rate)
         self.model.compile(optimizer=optimizer, loss='mse')
 
         # Compute action gradients (derivative of Q values w.r.t. to actions)

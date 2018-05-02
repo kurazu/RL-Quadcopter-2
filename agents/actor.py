@@ -6,7 +6,10 @@ from agents.neural import dense
 class Actor:
     """Actor (Policy) Model."""
 
-    def __init__(self, state_size, action_size, action_low, action_high):
+    def __init__(
+        self, state_size, action_size, action_low, action_high,
+         learning_rate=None
+    ):
         """Initialize parameters and build model.
 
         Params
@@ -21,6 +24,7 @@ class Actor:
         self.action_low = action_low
         self.action_high = action_high
         self.action_range = self.action_high - self.action_low
+        self.learning_rate = learning_rate
 
         # Initialize any other variables here
 
@@ -32,9 +36,8 @@ class Actor:
         states = layers.Input(shape=(self.state_size,), name='states')
 
         # Add hidden layers
-        net = dense(states, 128, activation='lrelu', batch_normalization=True)
-        net = dense(net, 64, activation='lrelu', batch_normalization=True)
-        net = dense(net, 16, activation='lrelu', batch_normalization=True)
+        net = dense(states, 300, activation='relu', batch_normalization=True)
+        net = dense(states, 400, activation='relu', batch_normalization=True)
 
         # Try different layer sizes, activations,
         # add batch normalization, regularizers, etc.
@@ -63,7 +66,7 @@ class Actor:
         # Incorporate any additional losses here (e.g. from regularizers)
 
         # Define optimizer and training function
-        optimizer = optimizers.Adam()
+        optimizer = optimizers.Adam(lr=self.learning_rate)
         updates_op = optimizer.get_updates(
             params=self.model.trainable_weights, loss=loss
         )
