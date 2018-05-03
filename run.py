@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 from task import Task
+from gym_task import GymTask
 
 
 def draw(results, mode='velocity'):
@@ -42,11 +43,12 @@ def draw(results, mode='velocity'):
 
 def fly(agent_class):
     task = Task()
+    task = GymTask('Pendulum-v0')
     agent = agent_class(task)
     rewards = []
     num_episodes = 10000
-    draw_every = num_episodes
-    mean_every = 100
+    draw_every = 500
+    mean_every = 10
     for episode_number in range(1, num_episodes + 1):
         state = agent.reset_episode()
         episode_rewards = 0
@@ -58,12 +60,12 @@ def fly(agent_class):
             agent.step(action, reward, next_state, done)
             state = next_state
             episode_rewards += reward
-            results['x'].append(task.sim.pose[0])
-            results['y'].append(task.sim.pose[1])
-            results['z'].append(task.sim.pose[2])
-            results['x_velocity'].append(task.sim.v[0])
-            results['y_velocity'].append(task.sim.v[1])
-            results['z_velocity'].append(task.sim.v[2])
+            # results['x'].append(task.sim.pose[0])
+            # results['y'].append(task.sim.pose[1])
+            # results['z'].append(task.sim.pose[2])
+            # results['x_velocity'].append(task.sim.v[0])
+            # results['y_velocity'].append(task.sim.v[1])
+            # results['z_velocity'].append(task.sim.v[2])
             if done:
                 break
         True or print(
