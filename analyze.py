@@ -20,7 +20,9 @@ def read_data(filename):
 
 
 def get_episode_filename(number):
-    return os.path.join(HERE, 'episodes', f'episode-{number}.pickle')
+    return os.path.join(HERE, 'episodes', 'episode-{number}.pickle'.format(
+        number=number
+    ))
 
 
 def get_scores():
@@ -35,6 +37,11 @@ def find_best_idx():
     scores = get_scores()
     best_episode_idx = max(scores, key=lambda idx: scores[idx])
     return best_episode_idx
+
+
+def find_last_idx():
+    scores = get_scores()
+    return max(scores)
 
 
 def show_all():
@@ -97,6 +104,8 @@ def main():
 
     if idx == 'best':
         idx = find_best_idx()
+    elif idx == 'last':
+        idx = find_last_idx()
     else:
         idx = int(idx)
     show_episode(idx)
