@@ -70,7 +70,7 @@ class Task():
         self.state_size = self.action_repeat * (6 + 3 + 3 + 3 + 3)
         self.action_low = 400
         self.action_high = 450
-        self.action_size = 4
+        self.action_size = 1
 
     def get_reward(self):
         """Uses current pose of sim to return reward."""
@@ -122,6 +122,7 @@ class Task():
 
     def step(self, rotor_speeds):
         """Uses action to obtain next state, reward, done."""
+        rotor_speeds = rotor_speeds * 4
         reward = 0
         state_all = []
         for _ in range(self.action_repeat):

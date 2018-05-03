@@ -16,11 +16,23 @@ def draw(states, mode='velocity'):
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
+    time = np.linspace(0, 1, len(states))
+
+    from task import euclid_distance, inverse_exponential
+    for x, y, z, *_ in states:
+        print(
+            'z', z, 'exp',
+            inverse_exponential(
+                euclid_distance(
+                    np.array([x, y, z]),
+                    np.array([0.0, 0.0, 10.0])
+                )
+            )
+        )
+
     x = [state[0] for state in states]
     y = [state[1] for state in states]
     z = [state[2] for state in states]
-    time = np.linspace(0, 1, len(states))
-
     ax.scatter(
         x, y, z,
         c=cm.cool(time),
@@ -67,8 +79,8 @@ def fly(agent_class):
     agent = agent_class(task)
     rewards = []
     num_episodes = 2000
-    mean_every = 100
-    draw_every_n_batches = 5
+    mean_every = 20
+    draw_every_n_batches = 100
     episode_number = 1
     while episode_number <= num_episodes:
         batch_rewards = []
