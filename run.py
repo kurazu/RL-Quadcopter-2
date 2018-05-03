@@ -15,36 +15,36 @@ from task import Task
 from gym_task import GymTask
 
 
-def draw(states, mode='velocity'):
-    mpl.rcParams['legend.fontsize'] = 10
+# def draw(states, mode='velocity'):
+#     mpl.rcParams['legend.fontsize'] = 10
 
-    fig = plt.figure()
-    ax = fig.gca(projection='3d')
-    time = np.linspace(0, 1, len(states))
+#     fig = plt.figure()
+#     ax = fig.gca(projection='3d')
+#     time = np.linspace(0, 1, len(states))
 
-    from task import euclid_distance, inverse_exponential
-    for x, y, z, *_ in states:
-        print(
-            'z', z, 'exp',
-            inverse_exponential(
-                euclid_distance(
-                    np.array([x, y, z]),
-                    np.array([0.0, 0.0, 10.0])
-                )
-            )
-        )
+#     from task import euclid_distance, inverse_exponential
+#     for x, y, z, *_ in states:
+#         print(
+#             'z', z, 'exp',
+#             inverse_exponential(
+#                 euclid_distance(
+#                     np.array([x, y, z]),
+#                     np.array([0.0, 0.0, 10.0])
+#                 )
+#             )
+#         )
 
-    x = [state[0] for state in states]
-    y = [state[1] for state in states]
-    z = [state[2] for state in states]
-    ax.scatter(
-        x, y, z,
-        c=cm.cool(time),
-        label=f'Quadcopter position/{mode}'
-    )
-    ax.legend()
+#     x = [state[0] for state in states]
+#     y = [state[1] for state in states]
+#     z = [state[2] for state in states]
+#     ax.scatter(
+#         x, y, z,
+#         c=cm.cool(time),
+#         label=f'Quadcopter position/{mode}'
+#     )
+#     ax.legend()
 
-    plt.show()
+#     plt.show()
 
 
 def run_episode(episode_number, task, agent):
@@ -86,7 +86,9 @@ def save_episode_dump(episode_number, episode_rewards, experiences):
         'experiences': experiences
     }
     filename = os.path.join(
-        HERE, 'episodes', f'episode-{episode_number}.pickle'
+        HERE, 'episodes', 'episode-{episode_number}.pickle'.format(
+            episode_number=episode_number
+        )
     )
     with io.open(filename, 'wb') as f:
         pickle.dump(dump, f)
@@ -98,7 +100,9 @@ def save_agent(episode_number, agent):
     ]:
         weights = getattr(agent, model_name).model.get_weights()
         filename = os.path.join(
-            HERE, 'episodes', f'{model_name}-{episode_number}.pickle'
+            HERE, 'episodes', '{model_name}-{episode_number}.pickle'.format(
+                model_name=model_name, episode_number=episode_number
+            )
         )
         with io.open(filename, 'wb') as f:
             pickle.dump(weights, f)
@@ -110,7 +114,9 @@ def save_agent(episode_number, agent):
     #     pickle.dump(agent.memory, f)
 
     filename = os.path.join(
-        HERE, 'episodes', f'noise-{episode_number}.pickle'
+        HERE, 'episodes', 'noise-{episode_number}.pickle'.format(
+            episode_number=episode_number
+        )
     )
     with io.open(filename, 'wb') as f:
         pickle.dump(agent.noise, f)
