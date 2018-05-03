@@ -1,6 +1,6 @@
-from collections import defaultdict
-
 import numpy as np
+
+from tqdm import tqdm
 
 import matplotlib as mpl
 from mpl_toolkits.mplot3d import Axes3D  # noqa
@@ -41,44 +41,52 @@ def draw(results, mode='velocity'):
     plt.show()
 
 
+def run_episode(episode_number, task, agent):
+    state = agent.reset_episode()
+    episode_rewards = 0
+    # results = defaultdict(list)
+    done = False
+    while not done:
+        action = agent.act(state)
+        next_state, reward, done = task.step(action)
+        agent.step(action, reward, next_state, done)
+        state = next_state
+        episode_rewards += reward
+        # results['x'].append(task.sim.pose[0])
+        # results['y'].append(task.sim.pose[1])
+        # results['z'].append(task.sim.pose[2])
+        # results['x_velocity'].append(task.sim.v[0])
+        # results['y_velocity'].append(task.sim.v[1])
+        # results['z_velocity'].append(task.sim.v[2])
+    # print(
+    #     'Episode', episode_number,
+    #     'finished in', task.sim.time,
+    #     'with reward', episode_rewards
+    # )
+    return episode_rewards
+
+
 def fly(agent_class):
     task = Task()
     task = GymTask('Pendulum-v0')
     agent = agent_class(task)
     rewards = []
     num_episodes = 10000
-    draw_every = 500
     mean_every = 10
-    for episode_number in range(1, num_episodes + 1):
-        state = agent.reset_episode()
-        episode_rewards = 0
-        results = defaultdict(list)
-        done = False
-        while not done:
-            action = agent.act(state)
-            next_state, reward, done = task.step(action)
-            agent.step(action, reward, next_state, done)
-            state = next_state
-            episode_rewards += reward
-            # results['x'].append(task.sim.pose[0])
-            # results['y'].append(task.sim.pose[1])
-            # results['z'].append(task.sim.pose[2])
-            # results['x_velocity'].append(task.sim.v[0])
-            # results['y_velocity'].append(task.sim.v[1])
-            # results['z_velocity'].append(task.sim.v[2])
-            if done:
-                break
-        True or print(
-            'Episode', episode_number,
-            'finished in', task.sim.time,
-            'with reward', episode_rewards
+    episode_number = 1
+    while episode_number <= num_episodes:
+        batch_rewards = []
+        for _ in tqdm(range(mean_every)):
+            reward = run_episode(episode_number, task, agent)
+            episode_number += 1
+            batch_rewards.append(reward)
+        average_batch_reward = np.mean(batch_rewards)
+        print(
+            'AVG Reward', average_batch_reward,
+            'after', episode_number, 'episodes /', num_episodes
         )
-        if episode_number % mean_every == 0:
-            avg_mean = np.mean(rewards[-draw_every:])
-            print('AVG Reward', avg_mean, 'after', episode_number, 'episodes')
-        if episode_number % draw_every == 0:
-            draw(results, mode='time')
-        rewards.append(episode_rewards)
+
+    # draw(results, mode='time')
     return rewards
 
 
