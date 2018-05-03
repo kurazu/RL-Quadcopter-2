@@ -1,3 +1,7 @@
+import io
+import pickle
+import os.path
+
 import numpy as np
 
 from tqdm import tqdm
@@ -44,18 +48,17 @@ def draw(states, mode='velocity'):
 
 
 def run_episode(episode_number, task, agent):
-    states = []
+    experiences = []
     state = agent.reset_episode()
-    states.append(state)
     episode_rewards = 0
     # results = defaultdict(list)
     done = False
     while not done:
         action = agent.act(state)
         next_state, reward, done = task.step(action)
-        agent.step(action, reward, next_state, done)
+        experience = agent.step(action, reward, next_state, done)
+        experiences.append(experience)
         state = next_state
-        states.append(state)
         episode_rewards += reward
         # results['x'].append(task.sim.pose[0])
         # results['y'].append(task.sim.pose[1])
@@ -68,7 +71,49 @@ def run_episode(episode_number, task, agent):
     #     'finished in', task.sim.time,
     #     'with reward', episode_rewards
     # )
-    return episode_rewards, states
+    save_episode_dump(episode_number, episode_rewards, experiences)
+    save_agent(episode_number, agent)
+    return episode_rewards
+
+
+HERE = os.path.dirname(__file__)
+
+
+def save_episode_dump(episode_number, episode_rewards, experiences):
+    dump = {
+        'episode_number': episode_number,
+        'total_reward': episode_rewards,
+        'experiences': experiences
+    }
+    filename = os.path.join(
+        HERE, 'episodes', f'episode-{episode_number}.pickle'
+    )
+    with io.open(filename, 'wb') as f:
+        pickle.dump(dump, f)
+
+
+def save_agent(episode_number, agent):
+    for model_name in [
+        'critic_target', 'critic_local', 'actor_target', 'actor_local'
+    ]:
+        weights = getattr(agent, model_name).model.get_weights()
+        filename = os.path.join(
+            HERE, 'episodes', f'{model_name}-{episode_number}.pickle'
+        )
+        with io.open(filename, 'wb') as f:
+            pickle.dump(weights, f)
+
+    # filename = os.path.join(
+    #     HERE, 'episodes', f'memory-{episode_number}.pickle'
+    # )
+    # with io.open(filename, 'wb') as f:
+    #     pickle.dump(agent.memory, f)
+
+    filename = os.path.join(
+        HERE, 'episodes', f'noise-{episode_number}.pickle'
+    )
+    with io.open(filename, 'wb') as f:
+        pickle.dump(agent.noise, f)
 
 
 def fly(agent_class):
@@ -79,13 +124,12 @@ def fly(agent_class):
     agent = agent_class(task)
     rewards = []
     num_episodes = 2000
-    mean_every = 20
-    draw_every_n_batches = 100
+    mean_every = 10
     episode_number = 1
     while episode_number <= num_episodes:
         batch_rewards = []
         for _ in tqdm(range(mean_every)):
-            reward, states = run_episode(episode_number, task, agent)
+            reward = run_episode(episode_number, task, agent)
             episode_number += 1
             batch_rewards.append(reward)
         average_batch_reward = np.mean(batch_rewards)
@@ -93,8 +137,6 @@ def fly(agent_class):
             'AVG Reward', average_batch_reward,
             'after', episode_number - 1, 'episodes /', num_episodes
         )
-        if (episode_number - 1) % (mean_every * draw_every_n_batches) == 0:
-            draw(states, mode='time')
     return rewards
 
 

@@ -28,6 +28,7 @@ class ReplayBuffer:
             next_state=next_state, done=done
         )
         self.memory.append(e)
+        return e
 
     def sample(self, batch_size=64):
         """Randomly sample a batch of experiences from memory."""

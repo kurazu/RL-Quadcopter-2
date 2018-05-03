@@ -74,7 +74,9 @@ class DDPG(BaseAgent):
 
     def step(self, action, reward, next_state, done):
         # Save experience / reward
-        self.memory.add(self.last_state, action, reward, next_state, done)
+        experience = self.memory.add(
+            self.last_state, action, reward, next_state, done
+        )
 
         # Learn, if enough samples are available in memory
         if len(self.memory) > self.batch_size:
@@ -83,6 +85,8 @@ class DDPG(BaseAgent):
 
         # Roll over last state and action
         self.last_state = next_state
+
+        return experience
 
     def act(self, state):
         """Returns actions for given state(s) as per current policy."""
