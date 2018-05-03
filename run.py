@@ -6,13 +6,13 @@ import numpy as np
 
 from tqdm import tqdm
 
-import matplotlib as mpl
-from mpl_toolkits.mplot3d import Axes3D  # noqa
-import matplotlib.pyplot as plt
-from matplotlib import cm
+# import matplotlib as mpl
+# from mpl_toolkits.mplot3d import Axes3D  # noqa
+# import matplotlib.pyplot as plt
+# from matplotlib import cm
 
 from task import Task
-from gym_task import GymTask
+# from gym_task import GymTask
 
 
 # def draw(states, mode='velocity'):
@@ -124,8 +124,8 @@ def save_agent(episode_number, agent):
 
 def fly(agent_class):
     quad_task = Task()
-    pendulum_task = GymTask('Pendulum-v0')
-    mountain_car_task = GymTask()
+    # pendulum_task = GymTask('Pendulum-v0')
+    # mountain_car_task = GymTask()
     task = quad_task
     agent = agent_class(task)
     rewards = []
