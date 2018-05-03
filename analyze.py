@@ -8,6 +8,8 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+from task import Task
+
 
 HERE = os.path.dirname(__file__)
 
@@ -63,19 +65,21 @@ def show_episode(episode_idx):
         'reward', episode['total_reward']
     )
     experiences = episode['experiences']
+    targets = [10 for _ in experiences]
     zs = [experience.next_state[0] for experience in experiences]
-    vzs = [experience.next_state[1] for experience in experiences]
-    azs = [experience.next_state[2] for experience in experiences]
+    # vzs = [experience.next_state[1] for experience in experiences]
+    # azs = [experience.next_state[2] for experience in experiences]
     actions = normalize(
-        400, 450,
+        Task.ACTION_LOW, Task.ACTION_HIGH,
         [experience.action for experience in experiences]
     ) * 10
     rewards = [experience.reward for experience in experiences]
     frames = list(range(len(experiences)))
 
+    plt.plot(frames, targets, label='target z')
     plt.plot(frames, zs, label='z')
-    plt.plot(frames, vzs, label='vz')
-    plt.plot(frames, azs, label='az')
+    # plt.plot(frames, vzs, label='vz')
+    # plt.plot(frames, azs, label='az')
     plt.plot(frames, rewards, label='rewards')
     plt.plot(frames, actions, label='action')
 

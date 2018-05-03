@@ -38,10 +38,13 @@ class Task():
     Task (environment) that defines the goal and provides feedback to the agent
     """
 
+    ACTION_LOW = 404 - 50
+    ACTION_HIGH = 404 + 50
+
     def __init__(self):
         # Start
         # 10 cm above ground
-        init_pose = np.array([0.0, 0.0, 2.0, 0.0, 0.0, 0.0])
+        init_pose = np.array([0.0, 0.0, 10.0, 0.0, 0.0, 0.0])
 
         # Start still
         init_velocities = None  # Will become zeros
@@ -69,8 +72,8 @@ class Task():
         # 3 - angular_accel
         self.state_size = self.action_repeat * (6 + 3 + 3 + 3 + 3)
         self.state_size = self.action_repeat * (1 + 1 + 1)
-        self.action_low = 1
-        self.action_high = 900
+        self.action_low = self.ACTION_LOW
+        self.action_high = self.ACTION_HIGH
         self.action_size = 1
 
     def get_reward(self):
