@@ -23,7 +23,10 @@ class ReplayBuffer:
 
     def add(self, state, action, reward, next_state, done):
         """Add a new experience to memory."""
-        e = Experience(state, action, reward, next_state, done)
+        e = Experience(
+            state=state, action=action, reward=reward,
+            next_state=next_state, done=done
+        )
         self.memory.append(e)
 
     def sample(self, batch_size=64):

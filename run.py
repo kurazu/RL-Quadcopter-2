@@ -69,6 +69,7 @@ def run_episode(episode_number, task, agent):
 def fly(agent_class):
     task = Task()
     task = GymTask('Pendulum-v0')
+    task = GymTask()
     agent = agent_class(task)
     rewards = []
     num_episodes = 10000
@@ -83,7 +84,7 @@ def fly(agent_class):
         average_batch_reward = np.mean(batch_rewards)
         print(
             'AVG Reward', average_batch_reward,
-            'after', episode_number, 'episodes /', num_episodes
+            'after', episode_number - 1, 'episodes /', num_episodes
         )
 
     # draw(results, mode='time')
