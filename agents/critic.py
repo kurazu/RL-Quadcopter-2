@@ -37,7 +37,7 @@ class Critic:
         # )
 
         # Add hidden layer(s) for action pathway
-        net_actions = dense(actions, 32)
+        net_actions = dense(actions, 64)
         # net_actions = dense(
         #     net_actions, 400, activation='relu', batch_normalization=True
         # )
