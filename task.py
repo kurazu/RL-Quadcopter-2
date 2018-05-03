@@ -69,8 +69,8 @@ class Task():
         # 3 - angular_accel
         self.state_size = self.action_repeat * (6 + 3 + 3 + 3 + 3)
         self.state_size = self.action_repeat * (1 + 1 + 1)
-        self.action_low = 400
-        self.action_high = 450
+        self.action_low = 1
+        self.action_high = 900
         self.action_size = 1
 
     def get_reward(self):
