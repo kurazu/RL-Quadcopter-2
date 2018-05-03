@@ -68,6 +68,7 @@ class Task():
         # 3 - linear_accel
         # 3 - angular_accel
         self.state_size = self.action_repeat * (6 + 3 + 3 + 3 + 3)
+        self.state_size = self.action_repeat * (1 + 1 + 1)
         self.action_low = 400
         self.action_high = 450
         self.action_size = 1
@@ -82,7 +83,6 @@ class Task():
         reward = (
             # Penalize each frame it takes us to get to the target
             # -1 +
-            0.1 +
             # Penalize straying from horizontal center
             # 0.2 * inverse_exponential(
             #     euclid_distance(current_position, self.horizonal_target_pos)
@@ -112,6 +112,7 @@ class Task():
     #     )
 
     def sim_to_state(self):
+        return [self.sim.pose[2], self.sim.v[2], self.sim.linear_accel[2]]
         return [
             *self.sim.pose,
             *self.sim.v,
