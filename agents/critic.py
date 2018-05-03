@@ -34,28 +34,29 @@ class Critic:
         net_states = dense(
             states, 300, activation='relu', batch_normalization=True
         )
-        net_states = dense(
-            net_states, 400, activation='relu', batch_normalization=True
-        )
+        # net_states = dense(
+        #     net_states, 400, activation='relu', batch_normalization=True
+        # )
 
         # Add hidden layer(s) for action pathway
         net_actions = dense(
             actions, 300, activation='relu', batch_normalization=True
         )
-        net_actions = dense(
-            net_actions, 400, activation='relu', batch_normalization=True
-        )
+        # net_actions = dense(
+        #     net_actions, 400, activation='relu', batch_normalization=True
+        # )
 
         # Try different layer sizes, activations,
         # add batch normalization, regularizers, etc.
 
         # Combine state and action pathways
         net = layers.Add()([net_states, net_actions])
-        net = layers.Activation('relu')(net)
 
         # Add more layers to the combined network if needed
+        net = dense(net, 300, activation='relu', batch_normalization=True)
+        net = dense(net, 400, activation='relu', batch_normalization=True)
 
-        # Add final output layer to prduce action values (Q values)
+        # Add final output layer to produce action values (Q values)
         Q_values = layers.Dense(units=1, name='q_values')(net)
 
         # Create Keras model

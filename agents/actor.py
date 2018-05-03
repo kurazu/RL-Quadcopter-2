@@ -37,7 +37,7 @@ class Actor:
 
         # Add hidden layers
         net = dense(states, 300, activation='relu', batch_normalization=True)
-        net = dense(states, 400, activation='relu', batch_normalization=True)
+        net = dense(net, 400, activation='relu', batch_normalization=True)
 
         # Try different layer sizes, activations,
         # add batch normalization, regularizers, etc.
