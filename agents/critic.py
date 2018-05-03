@@ -31,17 +31,13 @@ class Critic:
         actions = layers.Input(shape=(self.action_size,), name='actions')
 
         # Add hidden layer(s) for state pathway
-        net_states = dense(
-            states, 300, activation='relu', batch_normalization=True
-        )
+        net_states = dense(states, 64)
         # net_states = dense(
         #     net_states, 400, activation='relu', batch_normalization=True
         # )
 
         # Add hidden layer(s) for action pathway
-        net_actions = dense(
-            actions, 300, activation='relu', batch_normalization=True
-        )
+        net_actions = dense(actions, 32)
         # net_actions = dense(
         #     net_actions, 400, activation='relu', batch_normalization=True
         # )
@@ -53,8 +49,8 @@ class Critic:
         net = layers.Add()([net_states, net_actions])
 
         # Add more layers to the combined network if needed
-        net = dense(net, 300, activation='relu', batch_normalization=True)
-        net = dense(net, 400, activation='relu', batch_normalization=True)
+        net = dense(net, 64)
+        # net = dense(net, 400)
 
         # Add final output layer to produce action values (Q values)
         Q_values = layers.Dense(units=1, name='q_values')(net)

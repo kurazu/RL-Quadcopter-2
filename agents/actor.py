@@ -8,7 +8,7 @@ class Actor:
 
     def __init__(
         self, state_size, action_size, action_low, action_high,
-         learning_rate=None
+        learning_rate=None
     ):
         """Initialize parameters and build model.
 
@@ -36,8 +36,8 @@ class Actor:
         states = layers.Input(shape=(self.state_size,), name='states')
 
         # Add hidden layers
-        net = dense(states, 300, activation='relu', batch_normalization=True)
-        net = dense(net, 400, activation='relu', batch_normalization=True)
+        net = dense(states, 64)
+        # net = dense(net, 400)
 
         # Try different layer sizes, activations,
         # add batch normalization, regularizers, etc.

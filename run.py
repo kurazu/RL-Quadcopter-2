@@ -72,7 +72,7 @@ def run_episode(episode_number, task, agent):
     #     'with reward', episode_rewards
     # )
     save_episode_dump(episode_number, episode_rewards, experiences)
-    save_agent(episode_number, agent)
+    # save_agent(episode_number, agent)
     return episode_rewards
 
 

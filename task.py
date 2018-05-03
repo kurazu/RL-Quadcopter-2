@@ -38,8 +38,8 @@ class Task():
     Task (environment) that defines the goal and provides feedback to the agent
     """
 
-    ACTION_LOW = 404 - 50
-    ACTION_HIGH = 404 + 50
+    ACTION_LOW = 404 - 25
+    ACTION_HIGH = 404 + 25
 
     def __init__(self):
         # Start
