@@ -4,6 +4,8 @@ import io
 import pickle
 import sys
 
+import numpy as np
+
 import matplotlib.pyplot as plt
 
 
@@ -45,6 +47,12 @@ def show_all():
     plt.show()
 
 
+def normalize(min_, max_, x):
+    range_ = max_ - min_
+    x = np.array(x)
+    return (x - min_) / range_
+
+
 def show_episode(episode_idx):
     episode = read_data(get_episode_filename(episode_idx))
     print(
@@ -55,6 +63,10 @@ def show_episode(episode_idx):
     zs = [experience.next_state[0] for experience in experiences]
     vzs = [experience.next_state[1] for experience in experiences]
     azs = [experience.next_state[2] for experience in experiences]
+    actions = normalize(
+        400, 450,
+        [experience.action for experience in experiences]
+    ) * 10
     rewards = [experience.reward for experience in experiences]
     frames = list(range(len(experiences)))
 
@@ -62,6 +74,7 @@ def show_episode(episode_idx):
     plt.plot(frames, vzs, label='vz')
     plt.plot(frames, azs, label='az')
     plt.plot(frames, rewards, label='rewards')
+    plt.plot(frames, actions, label='action')
 
     plt.legend()
     plt.ylim()
