@@ -11,29 +11,19 @@ from task import Task
 from gym_task import GymTask
 
 
-def draw(results, mode='velocity'):
+def draw(states, mode='velocity'):
     mpl.rcParams['legend.fontsize'] = 10
 
     fig = plt.figure()
     ax = fig.gca(projection='3d')
-    combined_velocity = np.array(list(zip(
-        results['x_velocity'], results['y_velocity'], results['z_velocity']
-    )))
-    velocity_value = np.sum(combined_velocity ** 2, axis=1)
-    min = np.min(velocity_value)
-    max = np.max(velocity_value)
-    range = max - min
-    velocity_factor = (velocity_value - min) / range
-    time = np.linspace(0, 1, len(velocity_factor))
-
-    color_dimension = {
-        'velocity': velocity_factor,
-        'time': time
-    }[mode]
+    x = [state[0] for state in states]
+    y = [state[1] for state in states]
+    z = [state[2] for state in states]
+    time = np.linspace(0, 1, len(states))
 
     ax.scatter(
-        results['x'], results['y'], results['z'],
-        c=cm.cool(color_dimension),
+        x, y, z,
+        c=cm.cool(time),
         label=f'Quadcopter position/{mode}'
     )
     ax.legend()
@@ -42,7 +32,9 @@ def draw(results, mode='velocity'):
 
 
 def run_episode(episode_number, task, agent):
+    states = []
     state = agent.reset_episode()
+    states.append(state)
     episode_rewards = 0
     # results = defaultdict(list)
     done = False
@@ -51,6 +43,7 @@ def run_episode(episode_number, task, agent):
         next_state, reward, done = task.step(action)
         agent.step(action, reward, next_state, done)
         state = next_state
+        states.append(state)
         episode_rewards += reward
         # results['x'].append(task.sim.pose[0])
         # results['y'].append(task.sim.pose[1])
@@ -63,22 +56,24 @@ def run_episode(episode_number, task, agent):
     #     'finished in', task.sim.time,
     #     'with reward', episode_rewards
     # )
-    return episode_rewards
+    return episode_rewards, states
 
 
 def fly(agent_class):
-    task = Task()
-    task = GymTask('Pendulum-v0')
-    task = GymTask()
+    quad_task = Task()
+    pendulum_task = GymTask('Pendulum-v0')
+    mountain_car_task = GymTask()
+    task = quad_task
     agent = agent_class(task)
     rewards = []
-    num_episodes = 10000
-    mean_every = 10
+    num_episodes = 2000
+    mean_every = 100
+    draw_every_n_batches = 5
     episode_number = 1
     while episode_number <= num_episodes:
         batch_rewards = []
         for _ in tqdm(range(mean_every)):
-            reward = run_episode(episode_number, task, agent)
+            reward, states = run_episode(episode_number, task, agent)
             episode_number += 1
             batch_rewards.append(reward)
         average_batch_reward = np.mean(batch_rewards)
@@ -86,8 +81,8 @@ def fly(agent_class):
             'AVG Reward', average_batch_reward,
             'after', episode_number - 1, 'episodes /', num_episodes
         )
-
-    # draw(results, mode='time')
+        if (episode_number - 1) % (mean_every * draw_every_n_batches) == 0:
+            draw(states, mode='time')
     return rewards
 
 
