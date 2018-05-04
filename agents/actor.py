@@ -36,8 +36,8 @@ class Actor:
         states = layers.Input(shape=(self.state_size,), name='states')
 
         # Add hidden layers
-        net = dense(states, 64)
-        # net = dense(net, 400)
+        net = dense(states, 300)
+        net = dense(net, 400)
 
         # Try different layer sizes, activations,
         # add batch normalization, regularizers, etc.
