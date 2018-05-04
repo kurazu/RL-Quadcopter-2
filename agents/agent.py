@@ -11,7 +11,7 @@ from agents.base import BaseAgent
 class DDPG(BaseAgent):
     """Reinforcement Learning agent that learns using DDPG."""
 
-    def __init__(self, task):
+    def __init__(self, task, simple=False):
         super().__init__(task)
         actor_lr = 10**-4
         critic_lr = 10**-3
@@ -24,20 +24,24 @@ class DDPG(BaseAgent):
         self.actor_local = Actor(
             self.state_size, self.action_size,
             self.action_low, self.action_high,
-            learning_rate=actor_lr
+            learning_rate=actor_lr,
+            simple=simple
         )
         self.actor_target = Actor(
             self.state_size, self.action_size,
             self.action_low, self.action_high,
-            learning_rate=actor_lr
+            learning_rate=actor_lr,
+            simple=simple
         )
 
         # Critic (Value) Model
         self.critic_local = Critic(
-            self.state_size, self.action_size, learning_rate=critic_lr
+            self.state_size, self.action_size,
+            learning_rate=critic_lr, simple=simple
         )
         self.critic_target = Critic(
-            self.state_size, self.action_size, learning_rate=critic_lr
+            self.state_size, self.action_size,
+            learning_rate=critic_lr, simple=simple
         )
 
         # Initialize target model parameters with local model parameters
@@ -58,7 +62,7 @@ class DDPG(BaseAgent):
         )
 
         # Replay memory
-        self.buffer_size = 10**6
+        self.buffer_size = 10**3
         self.batch_size = 64
         self.memory = ReplayBuffer(self.buffer_size, self.batch_size)
 

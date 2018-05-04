@@ -8,7 +8,7 @@ class Actor:
 
     def __init__(
         self, state_size, action_size, action_low, action_high,
-        learning_rate=None
+        learning_rate=None, simple=False
     ):
         """Initialize parameters and build model.
 
@@ -25,6 +25,7 @@ class Actor:
         self.action_high = action_high
         self.action_range = self.action_high - self.action_low
         self.learning_rate = learning_rate
+        self.simple = simple
 
         # Initialize any other variables here
 
@@ -36,8 +37,11 @@ class Actor:
         states = layers.Input(shape=(self.state_size,), name='states')
 
         # Add hidden layers
-        net = dense(states, 300)
-        net = dense(net, 400)
+        if self.simple:
+            net = dense(states, 64)
+        else:
+            net = dense(states, 300)
+            net = dense(net, 400)
 
         # Try different layer sizes, activations,
         # add batch normalization, regularizers, etc.

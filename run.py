@@ -127,7 +127,7 @@ def fly(agent_class):
     # pendulum_task = GymTask('Pendulum-v0')
     # mountain_car_task = GymTask()
     task = quad_task
-    agent = agent_class(task)
+    agent = agent_class(task, simple=True)
     rewards = []
     num_episodes = 2000
     mean_every = 10

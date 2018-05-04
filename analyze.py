@@ -12,6 +12,7 @@ from task import Task
 
 
 HERE = os.path.dirname(__file__)
+FOLDER = os.environ.get('FOLDER', 'episodes')
 
 
 def read_data(filename):
@@ -20,7 +21,7 @@ def read_data(filename):
 
 
 def get_episode_filename(number):
-    return os.path.join(HERE, 'episodes', 'episode-{number}.pickle'.format(
+    return os.path.join(HERE, FOLDER, 'episode-{number}.pickle'.format(
         number=number
     ))
 
@@ -74,7 +75,7 @@ def show_episode(episode_idx):
     experiences = episode['experiences']
     targets = [10 for _ in experiences]
     zs = [experience.next_state[0] for experience in experiences]
-    # vzs = [experience.next_state[1] for experience in experiences]
+    vzs = [experience.next_state[1] for experience in experiences]
     # azs = [experience.next_state[2] for experience in experiences]
     actions = normalize(
         Task.ACTION_LOW, Task.ACTION_HIGH,
@@ -85,7 +86,7 @@ def show_episode(episode_idx):
 
     plt.plot(frames, targets, label='target z')
     plt.plot(frames, zs, label='z')
-    # plt.plot(frames, vzs, label='vz')
+    plt.plot(frames, vzs, label='vz')
     # plt.plot(frames, azs, label='az')
     plt.plot(frames, rewards, label='rewards')
     plt.plot(frames, actions, label='action')

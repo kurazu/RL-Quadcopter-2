@@ -39,7 +39,7 @@ class Task():
     """
 
     ACTION_LOW = 404 - 25
-    ACTION_HIGH = 404 + 25
+    ACTION_HIGH = 404 + 50
 
     def __init__(self):
         # Start
@@ -56,7 +56,7 @@ class Task():
         self.horizonal_target_pos = self.target_pos[:2]
 
         # time limit for each episode
-        runtime = 50.
+        runtime = 500.
 
         # Simulation
         self.sim = PhysicsSim(
@@ -79,10 +79,11 @@ class Task():
     def get_reward(self):
         """Uses current pose of sim to return reward."""
 
-        current_position = self.sim.pose[:3]
+        current_z = self.sim.pose[2]
+        target_z = self.target_pos[2]
+        z_speed = self.sim.v[2]
 
-        distance_to_target = euclid_distance(current_position, self.target_pos)
-        ie = inverse_exponential(distance_to_target)
+        distance_to_target = abs(current_z - target_z)
         reward = (
             # Penalize each frame it takes us to get to the target
             # -1 +
@@ -91,7 +92,8 @@ class Task():
             #     euclid_distance(current_position, self.horizonal_target_pos)
             # ) +
             # Penalize straying from target
-            ie
+            inverse_exponential(distance_to_target) +
+            inverse_exponential(abs(z_speed))
         )
         return reward
 
@@ -102,7 +104,7 @@ class Task():
         if time_exceeded:
             return 0
         else:  # Crashed or went off limits
-            return 0
+            return -1
 
     # def is_target_reached(self):
     #     current_position = self.sim.pose[:3]
