@@ -8,8 +8,6 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
-from task import Task
-
 
 HERE = os.path.dirname(__file__)
 FOLDER = os.environ.get('FOLDER', 'episodes')
@@ -45,12 +43,12 @@ def find_last_idx():
     return max(scores)
 
 
-def show_all():
+def plot_all():
     scores = get_scores()
     xs = sorted(scores)
     ys = [scores[idx] for idx in xs]
     mean_window = 25
-    means = [np.mean(ys[idx - mean_window:idx]) for idx in xs]
+    means = [np.mean(ys[max(idx - mean_window, 0):idx]) for idx in xs]
     plt.semilogy(xs, ys, label='reward')
     plt.semilogy(
         xs, means, label='reward mean (over last {})'.format(mean_window)
@@ -62,13 +60,7 @@ def show_all():
     plt.show()
 
 
-def normalize(min_, max_, x):
-    range_ = max_ - min_
-    x = np.array(x)
-    return (x - min_) / range_
-
-
-def show_episode(episode_idx):
+def show_episode_rewards(episode_idx):
     episode = read_data(get_episode_filename(episode_idx))
     print(
         'Episode', episode['episode_number'],
@@ -76,26 +68,25 @@ def show_episode(episode_idx):
     )
     experiences = episode['experiences']
     targets = [10 for _ in experiences]
+    ground = [0 for _ in experiences]
     zs = [experience.next_state[0] for experience in experiences]
-    vzs = [experience.next_state[1] for experience in experiences]
-    # azs = [experience.next_state[2] for experience in experiences]
-    actions = [experience.action for experience in experiences]
     rewards = [experience.reward for experience in experiences]
     frames = list(range(len(experiences)))
 
     fig, ax1 = plt.subplots()
-    ax1.plot(frames, targets, label='target z')
-    ax1.plot(frames, zs, label='z')
-    ax1.plot(frames, vzs, label='vz')
+    ax1.plot(frames, zs, color='b', label='z')
+    ax1.plot(frames, targets, color='g', label='target z')
+    ax1.plot(frames, ground, color='r', label='ground z')
+    # ax1.plot(frames, vzs, label='vz')
     ax1.set_xlabel('frame')
     # Make the y-axis label, ticks and tick labels match the line color.
-    ax1.set_ylabel('value', color='b')
+    ax1.set_ylabel('z', color='b')
     ax1.tick_params('y', colors='b')
 
     ax2 = ax1.twinx()
 
     # ax2.plot(frames, actions, label='action')
-    ax2.plot(frames, rewards, 'r', label='rewards')
+    ax2.plot(frames, rewards, color='r', label='rewards', alpha=0.2)
     ax2.set_ylabel('rewards', color='r')
     ax2.tick_params('y', colors='r')
 
@@ -108,7 +99,7 @@ def show_episode(episode_idx):
 def main():
     idx = sys.argv[1]
     if idx == 'all':
-        show_all()
+        plot_all()
         return
 
     if idx == 'best':
@@ -117,7 +108,7 @@ def main():
         idx = find_last_idx()
     else:
         idx = int(idx)
-    show_episode(idx)
+    show_episode_rewards(idx)
 
 
 if __name__ == '__main__':
