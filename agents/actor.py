@@ -8,7 +8,7 @@ class Actor:
 
     def __init__(
         self, state_size, action_size, action_low, action_high,
-        learning_rate=None, simple=False
+        learning_rate=None
     ):
         """Initialize parameters and build model.
 
@@ -18,6 +18,7 @@ class Actor:
             action_size (int): Dimension of each action
             action_low (array): Min value of each action dimension
             action_high (array): Max value of each action dimension
+            learning_rate (float): Optimizer learning rate
         """
         self.state_size = state_size
         self.action_size = action_size
@@ -25,9 +26,6 @@ class Actor:
         self.action_high = action_high
         self.action_range = self.action_high - self.action_low
         self.learning_rate = learning_rate
-        self.simple = simple
-
-        # Initialize any other variables here
 
         self.build_model()
 
@@ -36,18 +34,13 @@ class Actor:
         # Define input layer (states)
         states = layers.Input(shape=(self.state_size,), name='states')
 
-        # Instead of pre-processing
+        # Instead of pre-processing the inputs we use batch normalization
+        # of input to learn the distribution as we go.
         states = layers.BatchNormalization()(states)
 
         # Add hidden layers
-        if self.simple:
-            net = dense(states, 64)
-        else:
-            net = dense(states, 300)
-            net = dense(net, 400)
-
-        # Try different layer sizes, activations,
-        # add batch normalization, regularizers, etc.
+        # Simplified neural net compared to the original DDPG paper.
+        net = dense(states, 64)
 
         # Add final output layer with sigmoid activation
         raw_actions = layers.Dense(

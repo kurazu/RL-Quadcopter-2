@@ -6,17 +6,15 @@ from agents.neural import dense
 class Critic:
     """Critic (Value) Model."""
 
-    def __init__(
-        self, state_size, action_size, learning_rate=None, simple=False
-    ):
+    def __init__(self, state_size, action_size, learning_rate=None):
         """Initialize parameters and build model.
 
         Params
         ======
             state_size (int): Dimension of each state
             action_size (int): Dimension of each action
+            learning_rate (float): Optimizer learning rate
         """
-        self.simple = simple
         self.state_size = state_size
         self.action_size = action_size
 
@@ -33,35 +31,23 @@ class Critic:
         states = layers.Input(shape=(self.state_size,), name='states')
         actions = layers.Input(shape=(self.action_size,), name='actions')
 
+        # Instead of pre-processing the inputs we use batch normalization
+        # of input to learn the distribution as we go.
         states = layers.BatchNormalization()(states)
         actions = layers.BatchNormalization()(actions)
 
         # Add hidden layer(s) for state pathway
-        if self.simple:
-            net_states = dense(states, 64)
-            net_actions = dense(actions, 64)
-        else:
-            net_states = dense(states, 300)
-            net_states = dense(net_states, 400)
-
-            # Add hidden layer(s) for action pathway
-            net_actions = dense(actions, 300)
-            net_actions = dense(net_actions, 400)
-
-        # Try different layer sizes, activations,
-        # add batch normalization, regularizers, etc.
+        # Simplified neural net compared to the original DDPG paper.
+        net_states = dense(states, 64)
+        net_actions = dense(actions, 64)
 
         # Combine state and action pathways
         net = layers.Add()([net_states, net_actions])
         net = layers.BatchNormalization()(net)
         net = layers.LeakyReLU(alpha=0.1)(net)
 
-        # Add more layers to the combined network if needed
-        if self.simple:
-            net = dense(net, 64)
-        else:
-            net = dense(net, 300)
-            net = dense(net, 400)
+        # Simplified neural net compared to the original DDPG paper.
+        net = dense(net, 64)
 
         # Add final output layer to produce action values (Q values)
         Q_values = layers.Dense(units=1, name='q_values')(net)

@@ -4,17 +4,20 @@ from agents.actor import Actor
 from agents.critic import Critic
 from agents.noise import OUNoise
 from agents.buffer import ReplayBuffer
-# from agents.advanced_buffer import AdvancedReplayBuffer
-from agents.base import BaseAgent
 
 
-class DDPG(BaseAgent):
+class DDPG():
     """Reinforcement Learning agent that learns using DDPG."""
 
-    def __init__(self, task, simple=False):
-        super().__init__(task)
+    def __init__(self, task):
+        self.task = task
+
+        # The param values follow the original DDPG paper
+        # [CONTINUOUS CONTROL WITH DEEP REINFORCEMENT LEARNING]
+        # https://arxiv.org/pdf/1509.02971
         actor_lr = 10**-4
         critic_lr = 10**-3
+
         self.state_size = task.state_size
         self.action_size = task.action_size
         self.action_low = task.action_low
@@ -24,24 +27,22 @@ class DDPG(BaseAgent):
         self.actor_local = Actor(
             self.state_size, self.action_size,
             self.action_low, self.action_high,
-            learning_rate=actor_lr,
-            simple=simple
+            learning_rate=actor_lr
         )
         self.actor_target = Actor(
             self.state_size, self.action_size,
             self.action_low, self.action_high,
-            learning_rate=actor_lr,
-            simple=simple
+            learning_rate=actor_lr
         )
 
         # Critic (Value) Model
         self.critic_local = Critic(
             self.state_size, self.action_size,
-            learning_rate=critic_lr, simple=simple
+            learning_rate=critic_lr
         )
         self.critic_target = Critic(
             self.state_size, self.action_size,
-            learning_rate=critic_lr, simple=simple
+            learning_rate=critic_lr
         )
 
         # Initialize target model parameters with local model parameters
@@ -52,6 +53,7 @@ class DDPG(BaseAgent):
             self.actor_local.model.get_weights()
         )
 
+        # The param values follow the original DDPG paper
         # Noise process
         self.exploration_mu = 0
         self.exploration_theta = 0.15
@@ -62,17 +64,22 @@ class DDPG(BaseAgent):
         )
 
         # Replay memory
+        # The sise of the replay buffer was reduced by one order of magnitude
+        # compared to the original DDPG paper to make the algorithm learn
+        # on more recent experiences
         self.buffer_size = 10**5
+        # The param value follows the original DDPG paper
         self.batch_size = 64
         self.memory = ReplayBuffer(self.buffer_size, self.batch_size)
 
+        # The param values follow the original DDPG paper
         # Algorithm parameters
         self.gamma = 0.99  # discount factor
         self.tau = 0.001  # for soft update of target parameters
 
     def reset_episode(self):
         self.noise.reset()
-        state = super().reset_episode()
+        state = self.task.reset()
         self.last_state = state
         return state
 

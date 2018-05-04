@@ -5,35 +5,29 @@ import numpy as np
 from physics_sim import PhysicsSim
 
 """
-TAKE OFF
+HOVER TASK
 
-The copter starts slightly above ground (0.1m) and is supposed to fly up
-to 10 meters and stop there.
-To assure nice take-off (straight line up) we are going to penalize straying
-from the horizontal center.
-To assure that the copter is not taking too long, we are going to penalize
-each frame before arriving at target location.
-To show the copter the way we are going to terminate the episode only when
-the target location is reached.
-To make the copter hover at target location we are going to terminate the
-episode only when the copter is at target and has zero velocity.
+The quadcopter starts still at 10m above ground.
+It's aim is to stay in the air for as long as possible,
+aiming to be at 10m elevation.
 """
 
 
-def euclid_distance(point, target=None):
-    relevant_point = point[:len(target)]
-    return vector_length(relevant_point - target)
+def inverse_exponential(x):
+    """
+    Yields the highest value (1) when x == 0.
 
-
-def vector_length(point):
-    return np.sqrt(np.sum(point ** 2))
-
-
-def _inverse_exponential(x):
+    Works for positive numbers only.
+    """
     return math.exp(-x)
 
 
-def inverse_exponential(x):
+def shifted_reciprocal(x):
+    """
+    Yields the highest value (1) when x == 0.
+
+    Works for positive numbers only.
+    """
     return 1.0 / (x + 1)
 
 
@@ -45,24 +39,22 @@ class Task():
     Task (environment) that defines the goal and provides feedback to the agent
     """
 
+    # Reduced range of actions to make it easier to control the vehicle
     ACTION_LOW = 404 - 25
     ACTION_HIGH = 404 + 50
+    # The copter should hover around 10m above ground.
+    TARGET_HEIGHT = 10.0
 
     def __init__(self):
-        # Start
-        # 10 cm above ground
-        init_pose = np.array([0.0, 0.0, 10.0, 0.0, 0.0, 0.0])
+        # Start 10m above ground
+        init_pose = np.array([0.0, 0.0, self.TARGET_HEIGHT, 0.0, 0.0, 0.0])
 
         # Start still
         init_velocities = None  # Will become zeros
         init_angle_velocities = None  # Will become zeros
 
-        # Goal
-        # almost 10m above starting point
-        self.target_pos = np.array([0.0, 0.0, 10.0])
-        self.horizonal_target_pos = self.target_pos[:2]
-
         # time limit for each episode
+        # Allow long episodes that promote keeping the vehicle long in the air
         runtime = 5000.
 
         # Simulation
@@ -72,76 +64,74 @@ class Task():
 
         self.action_repeat = 3
 
-        # 6 - pose
-        # 3 - v
-        # 3- angular_v
-        # 3 - linear_accel
-        # 3 - angular_accel
-        self.state_size = self.action_repeat * (6 + 3 + 3 + 3 + 3)
+        # To make that task easier we will steer all rotors with one value.
+        self.action_size = 1
+
+        # Since the rotors have joined speeds the aircraft can only move in the
+        # z axis (go higher or lower) and will not rotate.
+        # That means that the only state we need to feed to the algorithm
+        # is:
+        # * z position
+        # * velocity along z axis
+        # * acceleration along z axis
         self.state_size = self.action_repeat * (1 + 1 + 1)
         self.action_low = self.ACTION_LOW
         self.action_high = self.ACTION_HIGH
-        self.action_size = 1
 
     def get_reward(self):
-        """Uses current pose of sim to return reward."""
+        """Reward the aircraft"""
 
         current_z = self.sim.pose[Z_AXIS]
-        target_z = self.target_pos[Z_AXIS]
         z_speed = self.sim.v[Z_AXIS]
         z_accel = self.sim.linear_accel[Z_AXIS]
 
-        distance_to_target = abs(current_z - target_z)
+        distance_to_target = abs(current_z - self.TARGET_HEIGHT)
         reward = (
+            # Promote keeping in the air by giving a small reward
+            # for not crashing
             0.1 +
-            # Penalize each frame it takes us to get to the target
-            # -1 +
-            # Penalize straying from horizontal center
-            # 0.2 * inverse_exponential(
-            #     euclid_distance(current_position, self.horizonal_target_pos)
-            # ) +
-            # Penalize straying from target
-            0.6 * inverse_exponential(distance_to_target) +
-            0.2 * inverse_exponential(abs(z_speed)) +
-            0.1 * inverse_exponential(abs(z_accel))
+            # Promote staying at 10m height
+            # (the highest reward will be given when the aircraft
+            # is at exactly 10m).
+            0.6 * shifted_reciprocal(distance_to_target) +
+            # Promote staying still
+            # To reduce the aircrafts tendency to go outside bounds and promote
+            # keeping minimal height variations we reward it for keeping
+            # zero z-axis velocity.
+            0.2 * shifted_reciprocal(abs(z_speed)) +
+            # Promote avoiding high acceleration
+            # Rapid acceleration leads to instability of flight, we reward
+            # the aircraft for avoiding it.
+            0.1 * shifted_reciprocal(abs(z_accel))
         )
         return reward
 
-    def get_target_reached_reward(self):
-        return +100
-
     def get_episode_finished_reward(self, time_exceeded):
+        """Special rewards when the simulation is terminated."""
         if time_exceeded:
+            # If we determine the simulation finished because the time limit
+            # was exceeded, it means the aircraft managed to stay in the air
+            # the whole time and we should not punish it for it.
             return 0
-        else:  # Crashed or went off limits
+        else:
+            # Otherwise the aircraft crashed into the floor or went outside
+            # the limited space. We punish it for it.
             return -1
 
-    # def is_target_reached(self):
-    #     current_position = self.sim.pose[:3]
-    #     current_velocity = self.sim.v
-    #     return (
-    #         # Within one cm from the target
-    #         abs(euclid_distance(current_position, self.target_pos)) < 0.01 and
-    #         # Almost zero velocity
-    #         abs(vector_length(current_velocity)) < 0.01
-    #     )
-
     def sim_to_state(self):
+        """Construct state to be used as experience from simulator state."""
+        # As mentioned earlier, we only need z-axis variables.
+        # This will keep our state nice and small.
         return [
             self.sim.pose[Z_AXIS],
             self.sim.v[Z_AXIS],
             self.sim.linear_accel[Z_AXIS]
         ]
-        return [
-            *self.sim.pose,
-            *self.sim.v,
-            *self.sim.angular_v,
-            *self.sim.linear_accel,
-            *self.sim.angular_accels
-        ]
 
     def step(self, rotor_speeds):
         """Uses action to obtain next state, reward, done."""
+        # We use only one action to control all 4 rotors.
+        # Here we copy it 4 times to conform with simulator input requirements.
         rotor_speeds = rotor_speeds * 4
         reward = 0
         state_all = []
@@ -152,7 +142,9 @@ class Task():
             state_all.append(self.sim_to_state())
 
         if done:
+            # Determine the cause of simulation termination
             time_exceeded = self.sim.time > self.sim.runtime
+            # Add additional reward
             reward += self.get_episode_finished_reward(time_exceeded)
 
         next_state = np.concatenate(state_all)
