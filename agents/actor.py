@@ -36,6 +36,9 @@ class Actor:
         # Define input layer (states)
         states = layers.Input(shape=(self.state_size,), name='states')
 
+        # Instead of pre-processing
+        states = layers.BatchNormalization()(states)
+
         # Add hidden layers
         if self.simple:
             net = dense(states, 64)

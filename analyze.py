@@ -51,8 +51,8 @@ def show_all():
     ys = [scores[idx] for idx in xs]
     mean_window = 25
     means = [np.mean(ys[idx - mean_window:idx]) for idx in xs]
-    plt.plot(xs, ys, label='reward')
-    plt.plot(xs, means, label='reward mean (over last {})'.format(mean_window))
+    plt.semilogy(xs, ys, label='reward')
+    plt.semilogy(xs, means, label='reward mean (over last {})'.format(mean_window))
 
     plt.legend()
     plt.ylim()

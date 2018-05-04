@@ -33,6 +33,9 @@ class Critic:
         states = layers.Input(shape=(self.state_size,), name='states')
         actions = layers.Input(shape=(self.action_size,), name='actions')
 
+        states = layers.BatchNormalization()(states)
+        actions = layers.BatchNormalization()(actions)
+
         # Add hidden layer(s) for state pathway
         if self.simple:
             net_states = dense(states, 64)

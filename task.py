@@ -37,6 +37,9 @@ def inverse_exponential(x):
     return 1.0 / (x + 1)
 
 
+Z_AXIS = 2
+
+
 class Task():
     """
     Task (environment) that defines the goal and provides feedback to the agent
@@ -60,7 +63,7 @@ class Task():
         self.horizonal_target_pos = self.target_pos[:2]
 
         # time limit for each episode
-        runtime = 500.
+        runtime = 5000.
 
         # Simulation
         self.sim = PhysicsSim(
@@ -83,9 +86,10 @@ class Task():
     def get_reward(self):
         """Uses current pose of sim to return reward."""
 
-        current_z = self.sim.pose[2]
-        target_z = self.target_pos[2]
-        z_speed = self.sim.v[2]
+        current_z = self.sim.pose[Z_AXIS]
+        target_z = self.target_pos[Z_AXIS]
+        z_speed = self.sim.v[Z_AXIS]
+        z_accel = self.sim.linear_accel[Z_AXIS]
 
         distance_to_target = abs(current_z - target_z)
         reward = (
@@ -97,8 +101,9 @@ class Task():
             #     euclid_distance(current_position, self.horizonal_target_pos)
             # ) +
             # Penalize straying from target
-            inverse_exponential(distance_to_target) +
-            inverse_exponential(abs(z_speed))
+            0.6 * inverse_exponential(distance_to_target) +
+            0.2 * inverse_exponential(abs(z_speed)) +
+            0.1 * inverse_exponential(abs(z_accel))
         )
         return reward
 
@@ -122,7 +127,11 @@ class Task():
     #     )
 
     def sim_to_state(self):
-        return [self.sim.pose[2], self.sim.v[2], self.sim.linear_accel[2]]
+        return [
+            self.sim.pose[Z_AXIS],
+            self.sim.v[Z_AXIS],
+            self.sim.linear_accel[Z_AXIS]
+        ]
         return [
             *self.sim.pose,
             *self.sim.v,
