@@ -52,7 +52,9 @@ def show_all():
     mean_window = 25
     means = [np.mean(ys[idx - mean_window:idx]) for idx in xs]
     plt.semilogy(xs, ys, label='reward')
-    plt.semilogy(xs, means, label='reward mean (over last {})'.format(mean_window))
+    plt.semilogy(
+        xs, means, label='reward mean (over last {})'.format(mean_window)
+    )
 
     plt.legend()
     plt.ylim()
@@ -77,23 +79,29 @@ def show_episode(episode_idx):
     zs = [experience.next_state[0] for experience in experiences]
     vzs = [experience.next_state[1] for experience in experiences]
     # azs = [experience.next_state[2] for experience in experiences]
-    actions = normalize(
-        Task.ACTION_LOW, Task.ACTION_HIGH,
-        [experience.action for experience in experiences]
-    ) * 10
+    actions = [experience.action for experience in experiences]
     rewards = [experience.reward for experience in experiences]
     frames = list(range(len(experiences)))
 
-    plt.plot(frames, targets, label='target z')
-    plt.plot(frames, zs, label='z')
-    plt.plot(frames, vzs, label='vz')
-    # plt.plot(frames, azs, label='az')
-    plt.plot(frames, rewards, label='rewards')
-    plt.plot(frames, actions, label='action')
+    fig, ax1 = plt.subplots()
+    ax1.plot(frames, targets, label='target z')
+    ax1.plot(frames, zs, label='z')
+    ax1.plot(frames, vzs, label='vz')
+    ax1.set_xlabel('frame')
+    # Make the y-axis label, ticks and tick labels match the line color.
+    ax1.set_ylabel('value', color='b')
+    ax1.tick_params('y', colors='b')
 
-    plt.legend()
+    ax2 = ax1.twinx()
+
+    # ax2.plot(frames, actions, label='action')
+    ax2.plot(frames, rewards, 'r', label='rewards')
+    ax2.set_ylabel('rewards', color='r')
+    ax2.tick_params('y', colors='r')
+
+    ax1.legend()
+    fig.tight_layout()
     plt.ylim()
-
     plt.show()
 
 
