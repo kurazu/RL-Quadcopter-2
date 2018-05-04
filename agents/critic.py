@@ -31,11 +31,6 @@ class Critic:
         states = layers.Input(shape=(self.state_size,), name='states')
         actions = layers.Input(shape=(self.action_size,), name='actions')
 
-        # Instead of pre-processing the inputs we use batch normalization
-        # of input to learn the distribution as we go.
-        states = layers.BatchNormalization()(states)
-        actions = layers.BatchNormalization()(actions)
-
         # Add hidden layer(s) for state pathway
         # Simplified neural net compared to the original DDPG paper.
         net_states = dense(states, 64)

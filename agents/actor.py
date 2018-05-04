@@ -34,10 +34,6 @@ class Actor:
         # Define input layer (states)
         states = layers.Input(shape=(self.state_size,), name='states')
 
-        # Instead of pre-processing the inputs we use batch normalization
-        # of input to learn the distribution as we go.
-        states = layers.BatchNormalization()(states)
-
         # Add hidden layers
         # Simplified neural net compared to the original DDPG paper.
         net = dense(states, 64)
