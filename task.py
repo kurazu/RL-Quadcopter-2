@@ -85,6 +85,7 @@ class Task():
 
         distance_to_target = abs(current_z - target_z)
         reward = (
+            0.1 +
             # Penalize each frame it takes us to get to the target
             # -1 +
             # Penalize straying from horizontal center
