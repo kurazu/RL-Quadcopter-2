@@ -29,8 +29,12 @@ def vector_length(point):
     return np.sqrt(np.sum(point ** 2))
 
 
-def inverse_exponential(x):
+def _inverse_exponential(x):
     return math.exp(-x)
+
+
+def inverse_exponential(x):
+    return 1.0 / (x + 1)
 
 
 class Task():
